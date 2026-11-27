@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:,">
+  <title>WebGL2 三维制作工具</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 1rem/1.6 system-ui, sans-serif; color: CanvasText; background: Canvas; }
+    main { max-width: 48rem; margin: 10vh auto; padding: 0 1.5rem; }
+    h1 { font-size: clamp(1.5rem, 4vw, 2.4rem); line-height: 1.25; margin: 0 0 2rem; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 1rem 0; border-top: 1px solid GrayText; }
+    a { font-size: 1.15rem; font-weight: 650; text-underline-offset: 0.2em; }
+    p { margin: 0.3rem 0 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>WebGL2 三维制作工具</h1>
+    <nav aria-label="工具入口"><ul>
+      <li><a href="./master/index.html">场景播放器</a><p>方向键切换节拍与场景，H 查看快捷键。</p></li>
+      <li><a href="./core/sandbox/inspector.html">模型检视台</a><p>旋转模型，检查法线、线框、尺寸与贴地间隙。</p></li>
+      <li><a href="./core/sandbox/compare.html">候选对比台</a><p>输入两个预览地址，并排或拖动分界线比较。</p></li>
+    </ul></nav>
+  </main>
+</body>
+</html>

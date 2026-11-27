@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>360° 高精模型质检台 · Gate A</title>
+  <link rel="icon" href="data:," />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #05070c; color: #eaf1fb; font-family: "Noto Sans SC", "Inter", system-ui, sans-serif; }
+    #stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+    #inspector-hud { position: fixed; left: 18px; top: 18px; z-index: 20; width: 310px; background: rgba(8,12,20,0.84); border: 1px solid rgba(255,255,255,0.14); backdrop-filter: blur(14px); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; font-size: 12px; }
+    .hud-title { font-size: 13px; font-weight: 600; color: #c5d1dc; letter-spacing: 0.04em; }
+    .row { display: flex; flex-wrap: wrap; gap: 6px; }
+    button { background: rgba(255,255,255,0.08); color: #eaf1fb; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 5px 9px; font-size: 11px; cursor: pointer; }
+    button:hover { border-color: #94acbf; }
+    #inspector-stats { line-height: 1.65; color: rgba(234,241,251,0.85); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; }
+  </style>
+</head>
+<body>
+  <canvas id="stage" aria-label="三维模型视图">此视图需要 WebGL2。</canvas>
+  <aside id="inspector-hud">
+    <div class="hud-title">GATE A · 360° 高精模型质检台</div>
+    <div style="opacity:.68">通过 <code>?model=</code> 指定 GLB 或 glTF 文件的 URL。</div>
+    <div class="row">
+      <button data-mode="pbr">PBR 实景</button>
+      <button data-mode="clay">白模检查</button>
+      <button data-mode="normal">法线检查</button>
+      <button data-mode="wire">线框拓扑</button>
+    </div>
+    <div class="row">
+      <button data-light="darkroom">暗室光棚</button>
+      <button data-light="whitebox">白棚漫射</button>
+      <button data-light="rim">轮廓抓光</button>
+    </div>
+    <div class="row">
+      <button id="btn-spin">暂停自转</button>
+      <button id="btn-grid">显隐标尺网格</button>
+    </div>
+    <div id="inspector-stats">加载模型中...</div>
+  </aside>
+  <script type="module" src="./model-inspector.js"></script>
+</body>
+</html>

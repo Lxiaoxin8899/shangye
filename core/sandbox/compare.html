@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>同幕多候选对比评审台 · Gate C</title>
+  <link rel="icon" href="data:," />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #05070c; color: #eaf1fb; font-family: "Noto Sans SC", "Inter", system-ui, sans-serif; display: flex; flex-direction: column; }
+    header { height: 50px; padding: 0 16px; background: rgba(9,13,22,0.95); border-bottom: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; gap: 10px; font-size: 12px; }
+    header strong { color: #c5d1dc; white-space: nowrap; }
+    input { flex: 1; min-width: 140px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 6px 10px; color: #eaf1fb; font-size: 12px; }
+    button { background: rgba(255,255,255,0.09); color: #eaf1fb; border: 1px solid rgba(255,255,255,0.18); border-radius: 6px; padding: 6px 11px; cursor: pointer; font-size: 12px; white-space: nowrap; }
+    button:hover { border-color: #94acbf; }
+    main { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: #1d2738; position: relative; }
+    main.wipe { display: block; }
+    .pane { position: relative; width: 100%; height: 100%; background: #05070c; }
+    main.wipe .pane { position: absolute; inset: 0; }
+    iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .tag { position: absolute; top: 10px; left: 10px; z-index: 5; background: rgba(5,7,12,0.75); border: 1px solid rgba(255,255,255,0.16); padding: 4px 9px; border-radius: 6px; font-size: 11px; pointer-events: none; }
+    #wipe-slider { display: none; position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 30; width: 320px; }
+    main.wipe ~ #wipe-slider { display: block; }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>候选对比</strong>
+    <input id="url-a" aria-label="候选 A 地址" placeholder="候选 A 的页面地址" />
+    <input id="url-b" aria-label="候选 B 地址" placeholder="候选 B 的页面地址" />
+    <button id="btn-load">加载对比</button>
+    <button id="btn-mode">切换：并排 / 拉帘重叠</button>
+  </header>
+  <main id="stage-grid">
+    <div class="pane" id="pane-a"><div class="tag">候选 A</div><iframe title="候选 A" id="frame-a"></iframe></div>
+    <div class="pane" id="pane-b"><div class="tag">候选 B</div><iframe title="候选 B" id="frame-b"></iframe></div>
+  </main>
+  <input id="wipe-slider" aria-label="对比分界位置" type="range" min="0" max="100" value="50" />
+  <script type="module">
+    const params = new URLSearchParams(window.location.search);
+    const inputA = document.getElementById('url-a');
+    const inputB = document.getElementById('url-b');
+    const frameA = document.getElementById('frame-a');
+    const frameB = document.getElementById('frame-b');
+    const grid = document.getElementById('stage-grid');
+    const paneB = document.getElementById('pane-b');
+    const slider = document.getElementById('wipe-slider');
+
+    inputA.value = params.get('a') || '../../master/index.html#1';
+    inputB.value = params.get('b') || '../../master/index.html#2';
+
+    function loadBoth() {
+      frameA.src = inputA.value;
+      frameB.src = inputB.value;
+    }
+
+    let wipe = false;
+    function applyWipe() {
+      if (wipe) {
+        const pct = Number(slider.value);
+        paneB.style.clipPath = `inset(0 0 0 ${pct}%)`;
+      } else {
+        paneB.style.clipPath = '';
+      }
+    }
+
+    document.getElementById('btn-load').addEventListener('click', loadBoth);
+    document.getElementById('btn-mode').addEventListener('click', () => {
+      wipe = !wipe;
+      grid.classList.toggle('wipe', wipe);
+      applyWipe();
+    });
+    slider.addEventListener('input', applyWipe);
+    loadBoth();
+  </script>
+</body>
+</html>

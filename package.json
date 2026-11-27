@@ -1,0 +1,27 @@
+{
+  "name": "webgl-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "WebGL2 场景运行、模型检视与候选对比工具",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5173",
+    "preview": "vite preview --host 127.0.0.1 --port 4173",
+    "build": "vite build",
+    "build:singlefile": "SINGLEFILE=1 vite build",
+    "check": "node core/tools/check-project.mjs",
+    "verify": "node core/tools/capture-headless.mjs",
+    "new:candidate": "node core/tools/new-candidate.mjs"
+  },
+  "dependencies": {
+    "three": "^0.185.0"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.65.1",
+    "vite": "^6.3.5",
+    "vite-plugin-singlefile": "^2.3.0"
+  }
+}
