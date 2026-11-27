@@ -7,6 +7,7 @@ dist-single/
 # 本地渲染输出、视频、截图与大体积临时缓存
 /outputs/
 *.mp4
+!acts/**/textures/*.mp4
 *.mov
 *.mkv
 *.webm
