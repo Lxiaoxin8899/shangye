@@ -58,6 +58,18 @@ export function createDeck({ gfx, text, audio, ui, transitions, scenes, headless
 
   let activeTransition = null; // { fromIdx, toIdx, name, dir, dur, elapsed, fromState }
 
+  // 渲染器基线：每幕 render 前恢复，避免某一幕改了全局状态（如 autoClear）没还原而影响别的幕。
+  // 只重置引擎自己依赖的项；各幕在 init 里有意打开的开关（如第三幕的 localClippingEnabled）不在此列。
+  function resetRendererBaseline() {
+    const r = gfx.renderer;
+    r.autoClear = false;
+    r.setScissorTest(false);
+  }
+  function renderEntry(entry, target, st, info) {
+    resetRendererBaseline();
+    entry.inst.render(target, st, info);
+  }
+
   function createSceneState(sceneIdx) {
     const beats = entries[sceneIdx].def.beats || [{ dur: 1, hold: 4, page: '1' }];
     return {
@@ -133,7 +145,7 @@ export function createDeck({ gfx, text, audio, ui, transitions, scenes, headless
 
     entry.inst.enter?.();
     entry.inst.update?.(snapState);
-    entry.inst.render(rtA, snapState);
+    renderEntry(entry, rtA, snapState);
     gfx.post(rtA.texture, rtSnapTemp, { ...postDefaults, ...(entry.def.post || {}) });
     gfx.blit(rtSnapTemp.texture, snap);
   }
@@ -343,10 +355,10 @@ export function createDeck({ gfx, text, audio, ui, transitions, scenes, headless
       const fromEntry = entries[tr.fromIdx];
       const toEntry = entries[tr.toIdx];
       fromEntry.inst.update?.(tr.fromState);
-      fromEntry.inst.render(rtA, tr.fromState);
+      renderEntry(fromEntry, rtA, tr.fromState);
 
       toEntry.inst.update?.(state);
-      toEntry.inst.render(rtB, state);
+      renderEntry(toEntry, rtB, state);
 
       const p = clamp01(tr.elapsed / Math.max(tr.dur, 0.001));
       transitions.render(tr.name, rtA, rtB, rtCompose, p, tr.dir);
@@ -358,7 +370,7 @@ export function createDeck({ gfx, text, audio, ui, transitions, scenes, headless
       // 可选：场景实现 renderOverlay 时，2D 版面在调色之后再叠加，不经过色调映射与后期，保持文字锐利与纯白。
       // 转场与快照仍走 render() 内的叠加，未实现的场景行为不变。
       const overlayAfterPost = typeof curEntry.inst.renderOverlay === 'function';
-      curEntry.inst.render(rtA, state, { overlayAfterPost });
+      renderEntry(curEntry, rtA, state, { overlayAfterPost });
       gfx.post(rtA.texture, gfx.gradedRT, postCfg);
       if (overlayAfterPost) curEntry.inst.renderOverlay(gfx.gradedRT, state);
       gfx.present(gfx.gradedRT.texture);

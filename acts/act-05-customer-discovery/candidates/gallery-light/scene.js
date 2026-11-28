@@ -407,10 +407,11 @@ export default {
         renderer.render(scene, camera);
 
         // Composite crisp 2D Swiss editorial overlay on top
+        const prevAuto = renderer.autoClear;
         renderer.autoClear = false;
         renderer.clearDepth();
         renderer.render(overlay.scene, overlay.cam);
-        renderer.autoClear = true;
+        renderer.autoClear = prevAuto;
       },
 
       resize() {}

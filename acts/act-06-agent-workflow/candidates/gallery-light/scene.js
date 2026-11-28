@@ -505,18 +505,15 @@ export default {
         overlay.redraw(beat, beatReveal, selectedAgentIdx, activeRingIdx);
       },
 
-      render(outTarget) {
+      render(outTarget, s, info) {
         // 1. Render full 3D floating world through real Optical Bokeh DoF pass into outTarget
         dofRig.renderWithDof(scene, camera, outTarget, curFocusDist, curFocusRange, curMaxBlur);
+        // 2. 正常播放时 2D 版面改在调色之后叠加（renderOverlay）；转场与快照仍在这里叠加
+        if (!info?.overlayAfterPost) overlay.drawTo(ctx.gfx.renderer, outTarget, false);
+      },
 
-        // 2. Composite razor-sharp 2D Swiss Editorial Overlay on top (never blurred by DoF!)
-        const renderer = ctx.gfx.renderer;
-        renderer.setRenderTarget(outTarget);
-        renderer.setViewport(0, 0, outTarget.width, outTarget.height);
-        renderer.autoClear = false;
-        renderer.clearDepth();
-        renderer.render(overlay.scene, overlay.cam);
-        renderer.autoClear = true;
+      renderOverlay(gradedTarget) {
+        overlay.drawTo(ctx.gfx.renderer, gradedTarget, true);
       },
 
       resize() {}

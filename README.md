@@ -4,7 +4,7 @@
 
 ## 打开预览
 
-直接用支持 WebGL2 的浏览器打开 [单文件播放器](dist-single/master/index.html)。它包含引擎和两个测试视图，可以离线使用。左右方向键翻拍，H 显示快捷键。
+直接用支持 WebGL2 的浏览器打开 [单文件播放器](dist-single/master/index.html)。它包含全片 11 幕路演（清单见 [master/manifest.js](master/manifest.js)），可以离线使用。左右方向键翻拍，A 自动播放，N 演讲备注，O 总览，H 显示快捷键。
 
 要同时使用模型检视和候选比较，从本目录运行以下命令，再打开终端所示端口的首页。
 
@@ -39,7 +39,7 @@ npm run dev
 | `npm run build` | 重新生成 `dist/` 下的多入口静态站点 |
 | `npm run build:singlefile` | 重新生成 `dist-single/master/index.html` |
 | `npm run preview` | 用 Vite 启动多入口产物的本地预览 |
-| `npm run verify` | 用 Chromium 检查当前构建，在 `outputs/master/` 的新目录保存 PNG |
+| `npm run verify` | 用 Chromium 检查当前构建：总装逐拍走完、经真实转场跨过每一幕并检查整帧不发黑，在 `outputs/master/` 的新目录保存 PNG |
 
 自动验收需要可执行的 Chromium 或 Chrome。脚本优先读取 `CHROME_PATH`，也会查找 Playwright 的浏览器缓存和常用 Linux 安装路径。需要安装时可用 `npx playwright-core install chromium`。源码修改后先重建两种产物，再运行自动验收。`dist-single` 只打包总装入口。
 

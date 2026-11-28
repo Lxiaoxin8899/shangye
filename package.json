@@ -11,7 +11,7 @@
     "dev": "vite --host 127.0.0.1 --port 5173",
     "preview": "vite preview --host 127.0.0.1 --port 4173",
     "build": "vite build",
-    "build:singlefile": "SINGLEFILE=1 vite build",
+    "build:singlefile": "vite build --mode singlefile",
     "check": "node core/tools/check-project.mjs",
     "verify": "node core/tools/capture-headless.mjs",
     "new:candidate": "node core/tools/new-candidate.mjs"
