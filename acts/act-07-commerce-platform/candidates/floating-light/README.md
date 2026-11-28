@@ -1,0 +1,22 @@
+# act-07-commerce-platform · 候选 `floating-light`（悬浮空间 · 延续第六幕）
+
+- **所属幕次**：[act-07-commerce-platform](../../README.md)
+- **状态**：当前主选（初版）
+- **风格**：延续第六幕「悬浮空间 + 实时光学景深」——零地面暖白柔光穹顶、悬浮微尘、16-tap Vogel Disk 景深后处理，2D 标题层叠在景深之后保持锐利。
+- **文件组成**：
+  - [shaders/floating-space-and-dof.js](shaders/floating-space-and-dof.js)：复制自第六幕；微尘改为圆形贴图，避免近景出现方块点
+  - [models/materials.js](models/materials.js)：复制自第六幕材质库（棚拍 HDRI、PBR 材质、一次性电子烟 / 西瓜香精瓶 / 源头工厂微缩）
+  - [models/platform-data.js](models/platform-data.js)：全部上屏数据（需求、四条线、三套方案、条款、确认单），**数字均为示例**
+  - [models/platform-props.js](models/platform-props.js)：MCP 中枢芯片、客户 Agent「对话入口」（钛框对话面板：AI 头像 · 在线状态 · 需求消息 · 输入框）、四条线零件（壳料 · 电池 · 烟油 · 代工组装）
+  - [models/platform-stage.js](models/platform-stage.js)：舞台编排——需求胶囊、寻源线与候选群、组合方案卡、乱线 → 星形协商、四家工厂与条款卡、对话演示的三角色连线与消息光点
+  - [textures/platform-cards.js](textures/platform-cards.js) · [textures/editorial-overlay.js](textures/editorial-overlay.js) · [scene.js](scene.js)
+- **画面原则**：每一拍只留这一拍的主角——第 3 拍只有三张方案卡；第 4 拍只留客户、MCP、四家选中的工厂和条款卡（零件、导轨、未选中的候选全部退场）；第 5 拍对话演示只留客户 Agent · MCP · 代工厂 Agent 三个角色，对话气泡在 2D 层逐条出现；第 6 拍只留确认单，背景全部柔焦。
+- **空间布局（米制）**：第 1–2 拍客户 Agent `(-0.60, -0.03)` → MCP `(0, 0)` → 零件 `x = 0.20` → 收敛 3 家 `x = 0.50 / 0.58 / 0.66`（四线 `y = ±0.05 / ±0.15`）；第 4 拍客户移到 `x = -0.42`，四家工厂对齐在 `x = 0.52`，条款卡在 `x = 0.71`；第 5 拍对话演示三角色排成一行：客户 `(-0.40, 0.02)` · MCP `(0, 0)`（缩到 72%）· 代工厂 `(0.40, 0.01)`（放大到 1.55 倍）。
+- **清晰度处理**：
+  - 2D 版面（标题、对话气泡、确认单）实现 `renderOverlay`，在调色之后叠加到显示缓冲，不经过 AgX 色调映射与后期，纯白保持纯白；转场与快照时仍在 `render` 内叠加。依赖 [core/engine/deck.js](../../../../core/engine/deck.js) 的可选钩子，未实现该钩子的场景行为不变。
+  - 版面画布随渲染分辨率重建（上限 3840 宽），按 1920 × 1080 逻辑坐标缩放绘制，高分屏不再拉伸发虚。
+  - 3D 标签与卡片用「深度测试永远通过 + 写入深度 + 透明裁切」，景深按卡片真实距离判断，不再被当成远处穹顶虚化；连线同样写入深度。
+  - 景深渲染目标开启 4× MSAA；雾密度由 0.20 降到 0.12，减少灰雾。
+- **交互**：第 3 拍点击底部胶囊切换方案（之后各拍跟随所选方案，对话文案也随之变化）；第 6 拍可点选两项待判断与「确认下单」。
+- **独立预览**：`acts/act-07-commerce-platform/candidates/floating-light/index.html`
+- **单幕验证（Gate B）**：2026-11-28 用本机 Chrome 无头模式按 `__deck.go` 逐拍取静帧（B0 6s · B1 5s / 8.5s · B2 7.5s · B3 1.8s / 6.5s · B4 0.7s / 3.4s / 6.6s / 11s · B5 3s），无脚本错误；动态效果待浏览器内复看。
