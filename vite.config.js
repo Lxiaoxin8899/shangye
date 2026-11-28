@@ -4,7 +4,6 @@ import { resolve } from 'node:path';
 import { readdirSync, existsSync } from 'node:fs';
 
 const ROOT = resolve(__dirname);
-const isSingleFile = process.env.SINGLEFILE === '1';
 
 function discoverCandidateHtmlEntries() {
   const entries = {};
@@ -25,7 +24,10 @@ function discoverCandidateHtmlEntries() {
   return entries;
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  // 单文件总装：`npm run build:singlefile`（--mode singlefile，跨平台）；兼容旧的 SINGLEFILE=1 环境变量
+  const isSingleFile = mode === 'singlefile' || process.env.SINGLEFILE === '1';
+  return {
   root: ROOT,
   base: './',
   resolve: {
@@ -68,4 +70,5 @@ export default defineConfig({
           }
         }
       }
+  };
 });

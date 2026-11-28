@@ -51,22 +51,31 @@ export function createAct6EditorialOverlay() {
   canvas.height = h;
   const g = canvas.getContext('2d');
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.minFilter = THREE.LinearFilter;
-  tex.magFilter = THREE.LinearFilter;
-  tex.generateMipmaps = false;
+  // 同一张画布两种用法（同第七幕）：
+  // - texGraded：正常播放时在调色之后叠加到显示缓冲（不做 sRGB 解码，纯白就是纯白，不再被 AgX 压灰）
+  // - texLinear：转场 / 快照时仍叠在 3D 画面里一起走后期
+  function makeOverlayTex(colorSpace) {
+    const t = new THREE.CanvasTexture(canvas);
+    t.colorSpace = colorSpace;
+    t.minFilter = THREE.LinearFilter;
+    t.magFilter = THREE.LinearFilter;
+    t.generateMipmaps = false;
+    return t;
+  }
+  const texGraded = makeOverlayTex(THREE.NoColorSpace);
+  const texLinear = makeOverlayTex(THREE.SRGBColorSpace);
+  let dirtyGraded = true;
+  let dirtyLinear = true;
 
-  const scene = new THREE.Scene();
   const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-  const mat = new THREE.MeshBasicMaterial({
-    map: tex,
-    transparent: true,
-    depthTest: false,
-    depthWrite: false,
-    toneMapped: false
-  });
-  scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat));
+  function makeOverlayScene(map) {
+    const sc = new THREE.Scene();
+    const m = new THREE.MeshBasicMaterial({ map, transparent: true, depthTest: false, depthWrite: false, toneMapped: false });
+    sc.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), m));
+    return sc;
+  }
+  const sceneGraded = makeOverlayScene(texGraded);
+  const sceneLinear = makeOverlayScene(texLinear);
 
   let lastKey = '';
 
@@ -279,12 +288,31 @@ export function createAct6EditorialOverlay() {
     }
     g.restore();
 
-    tex.needsUpdate = true;
+    dirtyGraded = true;
+    dirtyLinear = true;
+  }
+
+  function drawTo(renderer, target, afterPost) {
+    const tex = afterPost ? texGraded : texLinear;
+    if (afterPost && dirtyGraded) {
+      tex.needsUpdate = true;
+      dirtyGraded = false;
+    } else if (!afterPost && dirtyLinear) {
+      tex.needsUpdate = true;
+      dirtyLinear = false;
+    }
+    renderer.setRenderTarget(target);
+    renderer.setViewport(0, 0, target.width, target.height);
+    renderer.setScissorTest(false);
+    const prevAuto = renderer.autoClear;
+    renderer.autoClear = false;
+    renderer.clearDepth();
+    renderer.render(afterPost ? sceneGraded : sceneLinear, cam);
+    renderer.autoClear = prevAuto;
   }
 
   return {
-    scene,
-    cam,
+    drawTo,
     redraw,
     hostPillNormBounds,
     ringPillNormBounds
