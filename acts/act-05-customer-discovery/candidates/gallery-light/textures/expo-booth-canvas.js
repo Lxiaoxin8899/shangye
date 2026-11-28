@@ -15,25 +15,29 @@ function drawRoundedRect(g, x, y, w, h, r) {
   g.closePath();
 }
 
-function makeTex(canvas) {
+function makeTex(canvas, clamp = true) {
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 8;
   tex.minFilter = THREE.LinearMipmapLinearFilter;
   tex.magFilter = THREE.LinearFilter;
+  if (clamp) {
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+  }
   return tex;
 }
 
 /**
- * Draw a crisp, architecturally authentic QR Code graphic with 3 finder patterns
+ * Draw an ultra-crisp, architecturally authentic QR Code with 3 finder patterns & center emblem
  */
-function drawCrispQR(g, x, y, size, seed, fg = '#161b23', bg = '#ffffff') {
+function drawCrispQR(g, x, y, size, seed, fg = '#12161d', bg = '#ffffff', emblemHex = '#d49538') {
   const cells = 21;
-  const pad = size * 0.08;
+  const pad = size * 0.075;
   const inner = size - pad * 2;
   const step = inner / cells;
 
-  drawRoundedRect(g, x, y, size, size, 18);
+  drawRoundedRect(g, x, y, size, size, 20);
   g.fillStyle = bg;
   g.fill();
 
@@ -53,7 +57,6 @@ function drawCrispQR(g, x, y, size, seed, fg = '#161b23', bg = '#ffffff') {
   drawFinder(cells - 7, 0);
   drawFinder(0, cells - 7);
 
-  // Deterministic pseudo-random data modules
   let s = seed >>> 0;
   const next = () => {
     s = (s * 1664525 + 1013904223) >>> 0;
@@ -67,28 +70,34 @@ function drawCrispQR(g, x, y, size, seed, fg = '#161b23', bg = '#ffffff') {
       const inTR = r < 8 && c >= cells - 8;
       const inBL = r >= cells - 8 && c < 8;
       if (inTL || inTR || inBL) continue;
-      // Leave tiny center emblem area clear
       if (r >= 9 && r <= 11 && c >= 9 && c <= 11) continue;
-      if (next() > 0.48) {
-        g.fillRect(ox + c * step + 0.5, oy + r * step + 0.5, step - 0.8, step - 0.8);
+      if (next() > 0.46) {
+        g.fillRect(ox + c * step + 0.6, oy + r * step + 0.6, step - 1.0, step - 1.0);
       }
     }
   }
 
-  // Champagne-gold center emblem inside QR
-  g.fillStyle = '#c88d3a';
-  drawRoundedRect(g, ox + 9 * step, oy + 9 * step, 3 * step, 3 * step, 6);
+  // Center brand emblem
+  g.fillStyle = emblemHex;
+  drawRoundedRect(g, ox + 8.9 * step, oy + 8.9 * step, 3.2 * step, 3.2 * step, 8);
+  g.fill();
+  g.fillStyle = '#ffffff';
+  drawRoundedRect(g, ox + 9.8 * step, oy + 9.8 * step, 1.4 * step, 1.4 * step, 3);
   g.fill();
 }
 
 /**
- * Create textures for the Double-Sided Global Vape Expo Booth:
- * - canopyBanner: overhead exhibition fascia
+ * Create full high-resolution architectural graphic suite for the Flagship Global Vape Expo Pavilion:
+ * - canopyBanner: overhead main illuminated fascia
+ * - haloRibbon: upper hanging architectural ring graphic
  * - supplierFacade (Side A): 面对供应商 · 扫码加入 AI 渠道库 · 马上连接全球客户
  * - buyerFacade (Side B): 面对海外买家 · 扫码加入 AI 渠道库 · 马上连接真实工厂
+ * - hallFloorGraphic: subtle international exhibition hall floor aisle lines & booth number E-08
+ * - deskSign: front concierge island illuminated logo plaque
+ * - kioskSupplier / kioskBuyer / tabletScreen: interactive screens on stage
  */
 export function createExpoBoothTextures() {
-  // 1. Overhead Canopy Fascia Banner
+  // 1. Main Overhead Fascia Banner
   function makeCanopyBanner() {
     const W = 2048;
     const H = 160;
@@ -97,19 +106,62 @@ export function createExpoBoothTextures() {
     canvas.height = H;
     const g = canvas.getContext('2d');
 
-    g.fillStyle = '#1b212b';
+    g.fillStyle = '#151a23';
     g.fillRect(0, 0, W, H);
+
+    // Subtle brushed hairline accents top & bottom
+    g.fillStyle = '#e5a94e';
+    g.fillRect(0, 0, W, 6);
+    g.fillRect(0, H - 6, W, 6);
 
     g.textAlign = 'center';
     g.textBaseline = 'middle';
-    g.fillStyle = '#e0aa59';
-    g.font = `700 34px ${FONT_MONO}`;
-    g.fillText('GLOBAL VAPE EXPO  ·  AI 渠道库双面展台  ·  MCP CHANNEL HUB', W * 0.5, H * 0.5);
+    g.fillStyle = '#f2bf6d';
+    g.font = `700 32px ${FONT_MONO}`;
+    g.fillText('XINZHIWEI   ·   GLOBAL VAPE EXPO', W * 0.22, H * 0.5);
+
+    g.fillStyle = '#ffffff';
+    g.font = `800 48px ${FONT_SANS}`;
+    g.fillText('AI 渠道库 · 全球双面旗舰展馆', W * 0.54, H * 0.5);
+
+    g.fillStyle = '#7de6b2';
+    g.font = `700 30px ${FONT_MONO}`;
+    g.fillText('MCP HUB  ·  E-08', W * 0.87, H * 0.5);
 
     return makeTex(canvas);
   }
 
-  // 2. Facade Builder
+  // 2. Hanging Upper Ring Graphic (repeats smoothly around exterior)
+  function makeHaloRibbon() {
+    const W = 2048;
+    const H = 128;
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const g = canvas.getContext('2d');
+
+    g.fillStyle = '#171d27';
+    g.fillRect(0, 0, W, H);
+    g.fillStyle = '#e5a94e';
+    g.fillRect(0, 0, W, 8);
+    g.fillRect(0, H - 8, W, 8);
+
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillStyle = '#f4c678';
+    g.font = `800 42px ${FONT_SANS}`;
+    for (let i = 0; i < 3; i++) {
+      const cx = ((i + 0.5) / 3) * W;
+      g.fillText('AI 渠道库  ·  MCP GLOBAL HUB', cx, H * 0.5);
+    }
+
+    const tex = makeTex(canvas, false);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    return tex;
+  }
+
+  // 3. Illuminated Dual-Wing Architectural Lightbox Facades (High Contrast & Balanced Visual Weight)
   function makeFacade({
     darkTheme,
     sideCode,
@@ -120,6 +172,7 @@ export function createExpoBoothTextures() {
     bullet2,
     qrCaption,
     accent,
+    emblemHex,
     qrSeed
   }) {
     const W = 1536;
@@ -129,115 +182,238 @@ export function createExpoBoothTextures() {
     canvas.height = H;
     const g = canvas.getContext('2d');
 
-    // Background
-    g.fillStyle = darkTheme ? '#1e242f' : '#f7f5f0';
+    // Crisp studio backlit lightbox surface
+    g.fillStyle = darkTheme ? '#181e28' : '#ffffff';
     g.fillRect(0, 0, W, H);
 
-    // Subtle architectural vertical grid lines
-    g.strokeStyle = darkTheme ? 'rgba(255,255,255,0.045)' : 'rgba(24,30,40,0.045)';
+    // Subtle architectural backlit gradient glow from top wash-light
+    const grad = g.createLinearGradient(0, 0, 0, H);
+    if (darkTheme) {
+      grad.addColorStop(0, 'rgba(235, 178, 86, 0.14)');
+      grad.addColorStop(0.38, 'rgba(24, 30, 40, 0.0)');
+      grad.addColorStop(1, 'rgba(10, 14, 20, 0.25)');
+    } else {
+      grad.addColorStop(0, 'rgba(34, 128, 80, 0.08)');
+      grad.addColorStop(0.4, 'rgba(255, 255, 255, 0.0)');
+      grad.addColorStop(1, 'rgba(236, 234, 228, 0.45)');
+    }
+    g.fillStyle = grad;
+    g.fillRect(0, 0, W, H);
+
+    // Subtle vertical architectural grid
+    g.strokeStyle = darkTheme ? 'rgba(255,255,255,0.045)' : 'rgba(20,24,32,0.045)';
     g.lineWidth = 2;
-    for (let gx = 120; gx < W; gx += 120) {
+    for (let gx = 128; gx < W; gx += 128) {
       g.beginPath();
       g.moveTo(gx, 0);
       g.lineTo(gx, H);
       g.stroke();
     }
 
-    // Top accent bar
+    // Thick top luminous accent strip
     g.fillStyle = accent;
-    g.fillRect(0, 0, W, 16);
+    g.fillRect(0, 0, W, 20);
 
     // Side Eyebrow Pill
-    drawRoundedRect(g, 76, 68, 560, 68, 12);
-    g.fillStyle = darkTheme ? 'rgba(200, 141, 58, 0.22)' : 'rgba(27, 33, 43, 0.09)';
+    drawRoundedRect(g, 74, 62, 620, 74, 14);
+    g.fillStyle = darkTheme ? 'rgba(229, 169, 78, 0.22)' : 'rgba(24, 118, 72, 0.12)';
     g.fill();
     g.strokeStyle = accent;
-    g.lineWidth = 2.5;
+    g.lineWidth = 3.5;
     g.stroke();
 
     g.textAlign = 'left';
     g.textBaseline = 'middle';
-    g.fillStyle = darkTheme ? '#f0be74' : '#1e242f';
-    g.font = `700 34px ${FONT_SANS}`;
-    g.fillText(`${sideCode}  ·  ${audienceLabel}`, 106, 103);
+    g.fillStyle = darkTheme ? '#f6cb82' : '#145c38';
+    g.font = `800 36px ${FONT_SANS}`;
+    g.fillText(`${sideCode}  ·  ${audienceLabel}`, 106, 100);
 
     // Main Headline 1: 扫码加入 AI 渠道库
-    g.fillStyle = darkTheme ? '#ffffff' : '#171c24';
-    g.font = `800 92px ${FONT_SANS}`;
-    g.fillText(headline1, 76, 250);
+    g.fillStyle = darkTheme ? '#ffffff' : '#10141c';
+    g.font = `800 96px ${FONT_SANS}`;
+    g.fillText(headline1, 74, 246);
 
     // Main Headline 2: 马上连接全球客户 / 马上连接真实工厂
     g.fillStyle = accent;
-    g.font = `800 98px ${FONT_SANS}`;
-    g.fillText(headline2, 76, 376);
+    g.font = `800 104px ${FONT_SANS}`;
+    g.fillText(headline2, 74, 376);
 
-    // Horizontal architectural divider
-    g.strokeStyle = darkTheme ? 'rgba(255,255,255,0.16)' : 'rgba(24,30,40,0.14)';
-    g.lineWidth = 2.5;
+    // Crisp horizontal architectural divider
+    g.strokeStyle = darkTheme ? 'rgba(255,255,255,0.18)' : 'rgba(18,24,34,0.16)';
+    g.lineWidth = 3;
     g.beginPath();
-    g.moveTo(76, 464);
-    g.lineTo(W - 76, 464);
+    g.moveTo(74, 466);
+    g.lineTo(W - 74, 466);
     g.stroke();
 
-    // Bottom Left: QR Lightbox Frame
-    const qrSize = 470;
+    // Bottom Left: Oversized Ultra-Crisp QR Code Lightbox
+    const qrSize = 486;
     const qrX = 76;
-    const qrY = 528;
+    const qrY = 524;
 
-    drawRoundedRect(g, qrX - 16, qrY - 16, qrSize + 32, qrSize + 108, 24);
-    g.fillStyle = darkTheme ? 'rgba(255,255,255,0.08)' : 'rgba(24,30,40,0.06)';
+    drawRoundedRect(g, qrX - 18, qrY - 18, qrSize + 36, qrSize + 114, 24);
+    g.fillStyle = darkTheme ? 'rgba(255,255,255,0.09)' : '#f2f5f3';
     g.fill();
     g.strokeStyle = accent;
-    g.lineWidth = 3;
+    g.lineWidth = 4;
     g.stroke();
 
-    drawCrispQR(g, qrX, qrY, qrSize, qrSeed, '#141921', '#ffffff');
+    drawCrispQR(g, qrX, qrY, qrSize, qrSeed, '#10141b', '#ffffff', emblemHex);
 
     g.textAlign = 'center';
-    g.fillStyle = darkTheme ? '#f2d39c' : '#1e242f';
-    g.font = `700 34px ${FONT_SANS}`;
-    g.fillText(qrCaption, qrX + qrSize * 0.5, qrY + qrSize + 48);
+    g.fillStyle = darkTheme ? '#f6d496' : '#125936';
+    g.font = `800 38px ${FONT_SANS}`;
+    g.fillText(qrCaption, qrX + qrSize * 0.5, qrY + qrSize + 50);
 
-    // Bottom Right: Value Proposition Points
-    const rx = 620;
+    // Bottom Right: 2 High-Contrast Bold Value Boxes (large readable typography!)
+    const rx = 628;
+    const rw = W - rx - 74;
     g.textAlign = 'left';
 
-    // Box 1
-    drawRoundedRect(g, rx, 528, W - rx - 76, 254, 20);
-    g.fillStyle = darkTheme ? 'rgba(255,255,255,0.055)' : 'rgba(255,255,255,0.88)';
-    g.fill();
-    g.strokeStyle = darkTheme ? 'rgba(255,255,255,0.12)' : 'rgba(24,30,40,0.10)';
-    g.lineWidth = 2;
-    g.stroke();
+    [
+      { y: 524, code: '01 / DIRECT ENTRY', pt: bullet1 },
+      { y: 822, code: '02 / MCP PRECISION', pt: bullet2 }
+    ].forEach((b) => {
+      drawRoundedRect(g, rx, b.y, rw, 260, 22);
+      g.fillStyle = darkTheme ? 'rgba(255,255,255,0.085)' : '#f2f5f3';
+      g.fill();
+      g.strokeStyle = darkTheme ? 'rgba(235,178,86,0.40)' : 'rgba(20,110,66,0.42)';
+      g.lineWidth = 3.5;
+      g.stroke();
 
-    g.fillStyle = accent;
+      // Vertical bar inside box
+      drawRoundedRect(g, rx + 26, b.y + 34, 9, 192, 4);
+      g.fillStyle = accent;
+      g.fill();
+
+      g.fillStyle = accent;
+      g.font = `700 28px ${FONT_MONO}`;
+      g.fillText(b.code, rx + 56, b.y + 62);
+
+      g.fillStyle = darkTheme ? '#ffffff' : '#0b0f16';
+      g.font = `800 52px ${FONT_SANS}`;
+      g.fillText(b.pt[0], rx + 56, b.y + 136);
+
+      g.fillStyle = darkTheme ? 'rgba(236,242,250,0.92)' : '#1d2633';
+      g.font = `700 35px ${FONT_SANS}`;
+      g.fillText(b.pt[1], rx + 56, b.y + 208);
+    });
+
+    return makeTex(canvas);
+  }
+
+  // 4. International Exhibition Hall Floor Marking Overlay (transparent PNG over gallery floor)
+  function makeHallFloorGraphic() {
+    const W = 2048;
+    const H = 1280;
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const g = canvas.getContext('2d');
+
+    g.clearRect(0, 0, W, H);
+
+    // Subtle architectural booth boundary perimeter & aisle lanes
+    g.strokeStyle = 'rgba(30, 36, 46, 0.14)';
+    g.lineWidth = 3;
+    g.strokeRect(110, 96, W - 220, H - 192);
+
+    // Corner registration ticks
+    g.strokeStyle = 'rgba(180, 120, 34, 0.45)';
+    g.lineWidth = 6;
+    const tick = 56;
+    [
+      [110, 96, 1, 1],
+      [W - 110, 96, -1, 1],
+      [110, H - 96, 1, -1],
+      [W - 110, H - 96, -1, -1]
+    ].forEach(([cx, cy, dx, dy]) => {
+      g.beginPath();
+      g.moveTo(cx + dx * tick, cy);
+      g.lineTo(cx, cy);
+      g.lineTo(cx, cy + dy * tick);
+      g.stroke();
+    });
+
+    // Subtle hall aisle labels along front walkway (strictly spaced, ZERO overlap!)
+    g.textBaseline = 'middle';
+    g.font = `700 27px ${FONT_MONO}`;
+
+    g.textAlign = 'left';
+    g.fillStyle = 'rgba(148, 92, 18, 0.72)';
+    g.fillText('←  SUPPLIER ENTRY · 供应商通道', 148, H - 144);
+
+    g.textAlign = 'center';
+    g.fillStyle = 'rgba(24, 30, 40, 0.60)';
+    g.fillText('HALL A  ·  BOOTH E-08', W * 0.5, H - 144);
+
+    g.textAlign = 'right';
+    g.fillStyle = 'rgba(22, 114, 68, 0.76)';
+    g.fillText('海外买家通道 · BUYER ENTRY  →', W - 148, H - 144);
+
+    return makeTex(canvas);
+  }
+
+  // 5. Front Concierge Illuminated Logo Plaque
+  function makeDeskSign() {
+    const W = 768;
+    const H = 192;
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const g = canvas.getContext('2d');
+    g.fillStyle = '#151a22';
+    g.fillRect(0, 0, W, H);
+    g.strokeStyle = '#e5a94e';
+    g.lineWidth = 6;
+    g.strokeRect(8, 8, W - 16, H - 16);
+
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillStyle = '#f2be6b';
+    g.font = `700 32px ${FONT_MONO}`;
+    g.fillText('AI CHANNEL MCP HUB', W * 0.5, 68);
+    g.fillStyle = '#ffffff';
+    g.font = `800 50px ${FONT_SANS}`;
+    g.fillText('新智微科技 · 现场演示台', W * 0.5, 130);
+    return makeTex(canvas);
+  }
+
+  // 6. Kiosk & Reception Interactive Screen Texture
+  function makeKioskScreen(title, sub, accentHex, seed) {
+    const W = 512;
+    const H = 640;
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const g = canvas.getContext('2d');
+    g.fillStyle = '#141a23';
+    g.fillRect(0, 0, W, H);
+    g.fillStyle = accentHex;
+    g.fillRect(0, 0, W, 18);
+
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillStyle = accentHex;
     g.font = `700 28px ${FONT_MONO}`;
-    g.fillText('01 / DIRECT ENTRY', rx + 36, 584);
-    g.fillStyle = darkTheme ? '#ffffff' : '#171c24';
-    g.font = `700 44px ${FONT_SANS}`;
-    g.fillText(bullet1[0], rx + 36, 654);
-    g.fillStyle = darkTheme ? 'rgba(224,230,238,0.78)' : '#4c5563';
-    g.font = `500 32px ${FONT_SANS}`;
-    g.fillText(bullet1[1], rx + 36, 722);
+    g.fillText('SCAN TO CONNECT', W * 0.5, 68);
 
-    // Box 2
-    drawRoundedRect(g, rx, 822, W - rx - 76, 254, 20);
-    g.fillStyle = darkTheme ? 'rgba(255,255,255,0.055)' : 'rgba(255,255,255,0.88)';
+    g.fillStyle = '#ffffff';
+    g.font = `800 44px ${FONT_SANS}`;
+    g.fillText(title, W * 0.5, 128);
+
+    drawCrispQR(g, 116, 178, 280, seed, '#11161f', '#ffffff', accentHex);
+
+    g.fillStyle = '#e2e8f0';
+    g.font = `700 30px ${FONT_SANS}`;
+    g.fillText(sub, W * 0.5, 526);
+
+    drawRoundedRect(g, 96, 562, 320, 44, 10);
+    g.fillStyle = accentHex;
     g.fill();
-    g.strokeStyle = darkTheme ? 'rgba(255,255,255,0.12)' : 'rgba(24,30,40,0.10)';
-    g.lineWidth = 2;
-    g.stroke();
-
-    g.fillStyle = accent;
-    g.font = `700 28px ${FONT_MONO}`;
-    g.fillText('02 / MCP PRECISION', rx + 36, 878);
-    g.fillStyle = darkTheme ? '#ffffff' : '#171c24';
-    g.font = `700 44px ${FONT_SANS}`;
-    g.fillText(bullet2[0], rx + 36, 948);
-    g.fillStyle = darkTheme ? 'rgba(224,230,238,0.78)' : '#4c5563';
-    g.font = `500 32px ${FONT_SANS}`;
-    g.fillText(bullet2[1], rx + 36, 1016);
-
+    g.fillStyle = '#12161d';
+    g.font = `800 24px ${FONT_SANS}`;
+    g.fillText('AI 渠道库 · 实时直连', W * 0.5, 585);
     return makeTex(canvas);
   }
 
@@ -247,10 +423,11 @@ export function createExpoBoothTextures() {
     audienceLabel: '面对供应商 · 真实工厂',
     headline1: '扫码加入 AI 渠道库',
     headline2: '马上连接全球客户',
-    bullet1: ['参数与产能入库', '产品规格、合规认证直连 AI 底座'],
-    bullet2: ['告别盲目买流量', '让海外精准买方 AI 主动找到你'],
+    bullet1: ['参数与产能入库', '规格认证直连全球 AI 底座'],
+    bullet2: ['告别盲目买流量', '让海外精准买家主动找到你'],
     qrCaption: '供应商扫码入驻',
-    accent: '#e0a54b',
+    accent: '#ebb04d',
+    emblemHex: '#d89535',
     qrSeed: 1051
   });
 
@@ -260,16 +437,22 @@ export function createExpoBoothTextures() {
     audienceLabel: '面对海外买家 · 全球渠道',
     headline1: '扫码加入 AI 渠道库',
     headline2: '马上连接真实工厂',
-    bullet1: ['拒绝几千家名单', '精准直出产品、参数与实测规格'],
-    bullet2: ['穿透贸易二道贩子', '直连实勘认证源头工厂与真实报价'],
+    bullet1: ['拒绝几千家名单', '直出单品参数与实测规格'],
+    bullet2: ['穿透中间贸易商', '直连实勘源头厂与真实报价'],
     qrCaption: '海外买家扫码直连',
-    accent: '#24784d',
+    accent: '#1b7a4a',
+    emblemHex: '#1b7a4a',
     qrSeed: 2089
   });
 
   return {
     canopyBanner: makeCanopyBanner(),
+    haloRibbon: makeHaloRibbon(),
     supplierFacade,
-    buyerFacade
+    buyerFacade,
+    hallFloorGraphic: makeHallFloorGraphic(),
+    deskSign: makeDeskSign(),
+    kioskSupplier: makeKioskScreen('供应商扫码入库', '直连全球精准买方', '#ebb04d', 3011),
+    kioskBuyer: makeKioskScreen('买家扫码找真厂', '3 秒锁定实测优厂', '#3cc47e', 4027)
   };
 }
