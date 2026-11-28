@@ -355,8 +355,12 @@ export function createDeck({ gfx, text, audio, ui, transitions, scenes, headless
     } else {
       const curEntry = entries[curIdx];
       curEntry.inst.update?.(state);
-      curEntry.inst.render(rtA, state);
+      // 可选：场景实现 renderOverlay 时，2D 版面在调色之后再叠加，不经过色调映射与后期，保持文字锐利与纯白。
+      // 转场与快照仍走 render() 内的叠加，未实现的场景行为不变。
+      const overlayAfterPost = typeof curEntry.inst.renderOverlay === 'function';
+      curEntry.inst.render(rtA, state, { overlayAfterPost });
       gfx.post(rtA.texture, gfx.gradedRT, postCfg);
+      if (overlayAfterPost) curEntry.inst.renderOverlay(gfx.gradedRT, state);
       gfx.present(gfx.gradedRT.texture);
     }
   }
