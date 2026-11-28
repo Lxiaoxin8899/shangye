@@ -51,4 +51,4 @@ npm run dev
 | 交互、声音和转场 | [选框](core/engine/selectBox.js) · [辅助界面](core/engine/ui.js) · [Web Audio](core/engine/audio.js) · [转场着色器](core/transitions/index.js) |
 | 制作与检视 | [独立运行器](core/sandbox/act-runner.js) · [模型检视器](core/sandbox/model-inspector.js) · [候选对比](core/sandbox/compare.html) |
 | 校准与总装 | [通用校准块](core/sandbox/reference-mesh.js) · [双通道分屏](core/sandbox/split-view.js) · [测试视图](core/sandbox/reference-scenes.js) · [场景清单](master/manifest.js) |
-| 使用方法与交付核查 | [制作与验收](docs/制作与验收.md) · [核验记录](docs/核验记录.md) · [第三方组件声明](THIRD-PARTY.txt) |
+| 使用方法与交付核查 | [总装与维护](docs/总装与维护.md) · [分幕计划与决策](docs/分幕计划与决策.md) · [制作与验收](docs/制作与验收.md) · [核验记录](docs/核验记录.md) · [第三方组件声明](THIRD-PARTY.txt) |
